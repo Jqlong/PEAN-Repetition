@@ -12,8 +12,6 @@ UNK, PAD, CLS, SEP = '[UNK]', '[PAD]', '[CLS]', '[SEP]'
 
 
 # 构建数据集
-
-
 class MyDataset(Dataset):
     def __init__(self, config, path, pad_num=10, pad_length=400, pad_len_seq=10):
 
@@ -206,7 +204,7 @@ def train_model(config, dataloader):
         # print(labels)
 
         # 训练过程代码...
-        # print(traffic_bytes_idss.shape, seq_lens.shape, masks.shape, length_seq.shape, labels.shape)
+        print(traffic_bytes_idss.shape, seq_lens.shape, masks.shape, length_seq.shape, labels.shape)
 
 
 # 主函数

@@ -21,11 +21,14 @@ class Model(torch.nn.Module):
         self.encoders = torch.nn.ModuleList([
             copy.deepcopy(self.encoder)
             for _ in range(self.num_encoder)])
+        self.tanh = torch.nn.Tanh()  # 激活函数
 
 
 class Positional_Encoding(torch.nn.Module):
     def __init__(self, embed, pad_size, dropout, device):
         super(Positional_Encoding, self).__init__()
+        self.device = device
+        self.pe = torch.tensor([[pos / (10000.0 ** (i // 2 * 2.0 / embed)) for i in range(embed)] for pos in range(pad_size)])
 
 
 class Encoder(torch.nn.Module):
