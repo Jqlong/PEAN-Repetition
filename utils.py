@@ -174,7 +174,7 @@ class MyDataset(Dataset):
 # 创建 DataLoader
 def create_dataloader(config, dataset_path, batch_size):
     dataset = MyDataset(config, dataset_path)
-    print(dataset)
+    # print(dataset)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return dataloader
 
