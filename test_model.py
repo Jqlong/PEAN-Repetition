@@ -39,12 +39,6 @@ for batch in dataloader:
 
     pos_embed = position_embedding(traffic_bytes_idss)
     print("Positional Encoding 输出维度:", pos_embed.shape)
-    plt.figure(figsize=(5, 5))
-    sns.heatmap(pos_embed)
-    plt.title("Sinusoidal Function")
-    plt.xlabel("hidden dimension")
-    plt.ylabel("sequence length")
-
 
     # print(labels)
 
@@ -52,4 +46,5 @@ for batch in dataloader:
     # print(traffic_bytes_idss.shape, seq_lens.shape, masks.shape, length_seq.shape, labels.shape)
 
 # 1. 测试 Positional_Encoding 输出
+
 
