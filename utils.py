@@ -3,13 +3,14 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import pickle
 from transformers import BertTokenizer
+import config
 
 # tokenizer = BertTokenizer(vocab_file='config/vocab.txt', max_len=10, max_seq_length=8)
 
 from tqdm import tqdm
 
 UNK, PAD, CLS, SEP = '[UNK]', '[PAD]', '[CLS]', '[SEP]'
-
+config = config.Config()
 
 # 构建数据集
 class MyDataset(Dataset):
@@ -180,35 +181,35 @@ def create_dataloader(config, dataset_path, batch_size):
 
 
 # 配置示例
-class Config:
-    def __init__(self):
-        self.dataset = 'example_dataset'
-        self.vocab_path = 'config/vocab.txt'
-        self.train_path = './TrafficData/train.txt'
-        self.batch_size = 3
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        self.tokenizer = BertTokenizer(vocab_file='config/vocab.txt', max_len=10, max_seq_length=8)
-        self.pad_len_seq = 10
+# class Config:
+#     def __init__(self):
+#         self.dataset = 'example_dataset'
+#         self.vocab_path = 'config/vocab.txt'
+#         self.train_path = './TrafficData/train.txt'
+#         self.batch_size = 3
+#         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+#         self.tokenizer = BertTokenizer(vocab_file='config/vocab.txt', max_len=10, max_seq_length=8)
+#         self.pad_len_seq = 10
 
 
 # 训练循环示例
-def train_model(config, dataloader):
-    for batch in dataloader:
-        traffic_bytes_idss = batch['traffic_bytes_idss'].to(config.device)
-        seq_lens = batch['seq_lens'].to(config.device)
-        masks = batch['masks'].to(config.device)
-        length_seq = batch['length_seq'].to(config.device)
-        length_seq = torch.reshape(length_seq, (-1, config.pad_len_seq, 1)).to(config.device)
-        labels = batch['label'].to(config.device)
-
-        # print(labels)
-
-        # 训练过程代码...
-        print(traffic_bytes_idss.shape, seq_lens.shape, masks.shape, length_seq.shape, labels.shape)
+# def train_model(config, dataloader):
+#     for batch in dataloader:
+#         traffic_bytes_idss = batch['traffic_bytes_idss'].to(config.device)
+#         seq_lens = batch['seq_lens'].to(config.device)
+#         masks = batch['masks'].to(config.device)
+#         length_seq = batch['length_seq'].to(config.device)
+#         length_seq = torch.reshape(length_seq, (-1, config.pad_len_seq, 1)).to(config.device)
+#         labels = batch['label'].to(config.device)
+#
+#         # print(labels)
+#
+#         # 训练过程代码...
+#         print(traffic_bytes_idss.shape, seq_lens.shape, masks.shape, length_seq.shape, labels.shape)
 
 
 # 主函数
-if __name__ == "__main__":
-    config = Config()
-    dataloader = create_dataloader(config, config.train_path, config.batch_size)
-    train_model(config, dataloader)
+# if __name__ == "__main__":
+#     config = Config()
+#     dataloader = create_dataloader(config, config.train_path, config.batch_size)
+#     train_model(config, dataloader)
