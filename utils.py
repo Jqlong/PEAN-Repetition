@@ -70,7 +70,7 @@ class MyDataset(Dataset):
                     traffic_bytes_idss = []
 
                     for packet in flow:  # 遍历流中的每个数据包
-                        traffic_bytes = config.tokenizer.tokenize(packet)  # 对每一行的每一个数据包进行分词处理，
+                        traffic_bytes = self.config.tokenizer.tokenize(packet)  # 对每一行的每一个数据包进行分词处理，
                         # print(traffic_bytes)
                         # print(len(traffic_bytes))
                         if len(traffic_bytes) <= self.pad_length:  # 对长度小于400的进行处理
@@ -85,7 +85,7 @@ class MyDataset(Dataset):
                         seq_len = len(traffic_bytes)
                         # print('原始len', seq_len)
                         mask = []
-                        traffic_bytes_ids = config.tokenizer.convert_tokens_to_ids(traffic_bytes)  # 将字节转化为vocab.txt对应的索引
+                        traffic_bytes_ids = self.config.tokenizer.convert_tokens_to_ids(traffic_bytes)  # 将字节转化为vocab.txt对应的索引
                         # print(traffic_bytes_ids)
 
                         # 处理每个数据包的长度
