@@ -28,6 +28,7 @@ class Model(torch.nn.Module):
         self.tanh = torch.nn.Tanh()  # 激活函数
 
     def forward(self, x):
+        # print('x的维度', x.shape)  # x的维度 torch.Size([1, 400])
         out = self.position_embedding(x)
         for encoder in self.encoders:
             out, alpha = encoder(out)
@@ -58,8 +59,8 @@ class Scaled_Dot_Product_Attention(torch.nn.Module):
     def __init__(self):
         super(Scaled_Dot_Product_Attention, self).__init__()
 
-    def forward(self, Q, K, V, scale):
-        attention = torch.matmul(Q, K.premute(0, 2, 1))  # K.permute(0, 2, 1) 将键向量 K 的最后两个维度进行转置
+    def forward(self, Q, K, V, scale=None):
+        attention = torch.matmul(Q, K.permute(0, 2, 1))  # K.permute(0, 2, 1) 将键向量 K 的最后两个维度进行转置
         if scale:
             attention = attention * scale
 
@@ -80,7 +81,7 @@ class Multi_Head_Attention(torch.nn.Module):
         self.attention = Scaled_Dot_Product_Attention()  # 计算注意力
         self.fc = torch.nn.Linear(num_head * self.dim_head, dim_model)  # 多头注意力输出后的全连接层，将多头的输出重新映射回 dim_model。
         self.dropout = torch.nn.Dropout(dropout)
-        self.layer_num = torch.nn.LayerNorm(dim_model)  # 对输出进行层归一化，使得每层的输出具有相同的分布，帮助梯度更稳定地传播。
+        self.layer_norm = torch.nn.LayerNorm(dim_model)  # 对输出进行层归一化，使得每层的输出具有相同的分布，帮助梯度更稳定地传播。
 
     def forward(self, x):
         batch_size = x.size(0)  # 形状为 [batch_size, seq_len, dim_model]

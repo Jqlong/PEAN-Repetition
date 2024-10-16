@@ -32,17 +32,26 @@ class PEAN(torch.nn.Module):
         self.fc = torch.nn.Linear((self.emb_size * config.pad_num + config.lenlstmhidden_size * 2), config.num_classes)
 
     def forward(self, x):
+        # 输入的是一个列表
         config = self.config
         traffic_bytes_idss = x[0]  # raw数据
         length_seq = x[1]  # length数据
 
         # Transformer 用于 raw 特征提取
         hidden_feature = torch.Tensor(config.pad_num, len(traffic_bytes_idss), self.emb_size).to(config.device)
+        # 这里要改一下
         for i in range(config.pad_num):
-            out_trf = self.TRF(traffic_bytes_idss[:, i, :])  # Transformer 处理每个数据包
-            hidden_feature[i, :, :] = out_trf
+            packet_emb = self.emb((traffic_bytes_idss[:, i, :]))
+            packet_feature = torch.mean(packet_emb, dim=1)  # [batch_size,emb_size]  packet-level embedding
+            hidden_feature[i, :, :] = packet_feature
         hidden_feature = hidden_feature.permute(1, 0, 2)
-        out1 = hidden_feature.view(hidden_feature.size(0), -1)
+        out1 = self.TRF(hidden_feature)
+
+        # for i in range(config.pad_num):
+        #     out_trf = self.TRF(traffic_bytes_idss[:, i, :])  # Transformer 处理每个数据包
+        #     hidden_feature[i, :, :] = out_trf
+        # hidden_feature = hidden_feature.permute(1, 0, 2)
+        # out1 = hidden_feature.view(hidden_feature.size(0), -1)
 
         # LSTM 用于 length 特征提取
         input = self.length_embedding(length_seq).reshape(-1, config.pad_len_seq, config.length_emb_size)

@@ -158,7 +158,15 @@ class MyDataset(Dataset):
             return contents
 
     def __getitem__(self, index):
-        traffic_bytes_idss, seq_lens, masks, length_seq, label = self.data[index]
+
+        # print(print(f"Data at index {index}: {self.data[index]}"))
+        # 检查 data[index] 的内容和预期
+        if len(self.data[index]) == 5:
+            traffic_bytes_idss, seq_lens, masks, length_seq, label = self.data[index]
+        else:
+            raise ValueError(f"Unexpected data format at index {index}: {self.data[index]}")
+
+        # traffic_bytes_idss, seq_lens, masks, length_seq, label = self.data[index]
         return {
             "traffic_bytes_idss": torch.LongTensor(traffic_bytes_idss),
             "seq_lens": torch.LongTensor(seq_lens),
