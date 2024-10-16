@@ -1,6 +1,7 @@
+from torch.utils.data import Dataset, DataLoader
 import torch
 import numpy as np
-import utils
+from utils import create_dataloader, MyDataset
 from config import Config
 import pean_model
 
@@ -30,12 +31,21 @@ def main():
     config = Config()
 
     # 加载数据集
-    dataset = utils.MyDataset(config, config.train_path)  # 数据集
-    k = 5
+    dataset = MyDataset(config, config.train_path)  # 数据集
+    k = 10  # 采用10折交叉验证
 
-    train_loader = utils.create_dataloader(config, config.train_path, config.batch_size)
-    val_loader = utils.create_dataloader(config, config.test_path, config.batch_size)
-    test_loader = utils.create_dataloader(config, config.test_path, config.batch_size)
+    for i in range(k):
+        print(f"fold {i + 1} / {k}")
+        # 划分训练集和测试集
+        train_data, test_data = get_k_fold_data(k, i, dataset)
+
+        # 创建数据加载器
+        train_loader = DataLoader(dataset=train_data, batch_size=config.batch_size, shuffle=True)
+        test_val = DataLoader(dataset=test_data, batch_size=config.batch_size, shuffle=True)
+
+        # 初始化模型
+        model = pean_model.PEAN(config).to(config.device)
+
 
 
 if __name__ == '__main__':
