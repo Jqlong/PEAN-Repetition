@@ -30,6 +30,8 @@ def train(config, model, train_loader, optimizer, criterion, device):
         length_seq = batch["length_seq"].to(device)  # 长度序列
         label = batch["label"].to(device)  # 标签
 
+        # print("traffic_bytes_idss维度", traffic_bytes_idss.shape)  # torch.Size([1, 10, 400])
+
         # 前向传播
         output, out1_classification, out2_classification = model([traffic_bytes_idss, length_seq])
 
