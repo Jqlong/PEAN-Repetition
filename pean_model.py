@@ -86,7 +86,7 @@ class PEAN(torch.nn.Module):
         out1_classification = self.fc01(out1)
         out2_classification = self.fc02(out2)
         middle_layer = torch.cat((out1, out2), dim=1)
-        print('middle_layer的形状', middle_layer.shape)
+        # print('middle_layer的形状', middle_layer.shape)  torch.Size([3, 1536])
 
         # 最终分类
         final_output = self.fc(middle_layer)
