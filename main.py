@@ -63,9 +63,14 @@ def main():
             # epoch_list.append(epoch)
             # val_acc_list.append(val_acc)
 
+            # 获取当前学习率
+            lr = optimizer.state_dict()['param_groups'][0]['lr']
             print(
-                f"Epoch [{epoch + 1}/{config.epochs}], Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, Val "
-                f"Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
+                f"Epoch [{epoch + 1}/{config.epochs}], LR: {lr:.6f}, Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
+
+            # 在每个 epoch 后更新学习率，但只在 lr > 1e-5 时进行调度
+            if lr > 1e-5:
+                scheduler.step()
 
         # 在每个折训练完后可以测试一下模型的性能
         test_loader = torch.utils.data.DataLoader(val_data, batch_size=config.batch_size, shuffle=False)
