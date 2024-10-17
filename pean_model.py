@@ -25,6 +25,9 @@ class PEAN(torch.nn.Module):
 
         # LSTM 用于 length 特征
         self.length_embedding = torch.nn.Embedding(2000, config.length_emb_size, padding_idx=0)
+
+        # length_emb_size：这是输入到 LSTM 的每个时间步的特征维度  32
+        # lenlstmhidden_size：这是 LSTM 隐藏层的输出维度  128
         self.lenlstm = torch.nn.LSTM(config.length_emb_size, config.lenlstmhidden_size, config.num_layers,
                                bidirectional=True, batch_first=True, dropout=config.dropout)
         self.fc02 = torch.nn.Linear(config.lenlstmhidden_size * 2, config.num_classes)
@@ -71,13 +74,19 @@ class PEAN(torch.nn.Module):
 
         # LSTM 用于 length 特征提取
         input = self.length_embedding(length_seq).reshape(-1, config.pad_len_seq, config.length_emb_size)
+        # print('input的形状', input.shape)  # torch.Size([3, 10, 32])
         output, (final_hidden_state, final_cell_state) = self.lenlstm(input)
+        # print('output形状', output.shape)  # torch.Size([3, 10, 256])
+
+        # 最后一个实践部的输出，可以作为整个序列的表示
         out2 = output[:, -1, :]  # 提取最后一个时刻的输出作为特征
+        # print('out2的形状', out2.shape)  # torch.Size([3, 256])。
 
         # 进行特征融合
         out1_classification = self.fc01(out1)
         out2_classification = self.fc02(out2)
         middle_layer = torch.cat((out1, out2), dim=1)
+        print('middle_layer的形状', middle_layer.shape)
 
         # 最终分类
         final_output = self.fc(middle_layer)

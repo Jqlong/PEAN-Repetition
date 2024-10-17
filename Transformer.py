@@ -28,12 +28,14 @@ class Model(torch.nn.Module):
         self.tanh = torch.nn.Tanh()  # 激活函数
 
     def forward(self, x):
-        # print('x的维度', x.shape)  # x的维度 torch.Size([1, 400])
+        # print('x的维度', x.shape)  # x的维度 torch.Size([3, 10, 128])
         out = self.position_embedding(x)
+        # print('经过位置嵌入的形状', out.shape)  # torch.Size([3, 10, 128])
         for encoder in self.encoders:
             out, alpha = encoder(out)
 
         out = out.view(out.size(0), -1)
+        # print('输出的维度', out.shape)  # torch.Size([3, 1280])
         return out
 
 
