@@ -9,6 +9,7 @@ from train_eval import train, evaluate, test
 from utils import create_dataloader, MyDataset
 from config import Config
 import pean_model
+from sklearn.model_selection import train_test_split
 
 
 # 采用k折交叉验证
@@ -31,57 +32,74 @@ def main():
 
     # 加载数据集
     dataset = MyDataset(config, config.train_path)  # 假设使用整个数据集，之后用于K折划分
-    k = 10  # K折交叉验证中的折数
+    # k = 10  # K折交叉验证中的折数
 
-    acc_list = []
+    # acc_list = []
     k_list = []
     # K折交叉验证
-    for i in range(k):
-        k_list.append(i)
-        print(f"Fold {i + 1}/{k}")
+    # for i in range(k):
+    #     k_list.append(i)
+    #     print(f"Fold {i + 1}/{k}")
 
-        # 划分训练集和验证集
-        train_data, val_data = get_k_fold_data(k, i, dataset)
+    # 划分训练集和验证集
+    # train_data, val_data = get_k_fold_data(k, i, dataset)
 
-        # 创建数据加载器
-        train_loader = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True)
-        val_loader = torch.utils.data.DataLoader(val_data, batch_size=config.batch_size, shuffle=False)
+    # 数据划分：70% 训练集，15% 验证集，15% 测试集
+    train_data, temp_data = train_test_split(dataset, test_size=0.3, random_state=42)
+    val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42)
 
-        # 初始化模型
-        model = pean_model.PEAN(config).to(config.device)
+    # 数据加载器
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(val_data, batch_size=config.batch_size, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(test_data, batch_size=config.batch_size, shuffle=False)
 
-        # 定义优化器和损失函数
-        optimizer = Adam(model.parameters(), lr=config.learning_rate, weight_decay=0.001)
-        criterion = CrossEntropyLoss()
+    # 创建数据加载器
+    # train_loader = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, shuffle=True)
+    # val_loader = torch.utils.data.DataLoader(val_data, batch_size=config.batch_size, shuffle=False)
 
-        scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.992)
+    # 初始化模型
+    model = pean_model.PEAN(config).to(config.device)
 
-        # 训练与验证
-        for epoch in range(config.epochs):
-            train_loss, train_acc = train(config, model, train_loader, optimizer, criterion, config.device)
-            val_loss, val_acc = evaluate(config, model, val_loader, criterion, config.device)
-            # epoch_list.append(epoch)
-            # val_acc_list.append(val_acc)
+    # 定义优化器和损失函数
+    optimizer = Adam(model.parameters(), lr=config.learning_rate, weight_decay=0.001)
+    criterion = CrossEntropyLoss()
 
-            # 获取当前学习率
-            lr = optimizer.state_dict()['param_groups'][0]['lr']
-            print(
-                f"Epoch [{epoch + 1}/{config.epochs}], LR: {lr:.6f}, Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.992)
 
-            # 在每个 epoch 后更新学习率，但只在 lr > 1e-5 时进行调度
-            if lr > 1e-5:
-                scheduler.step()
+    # 训练与验证]
+    # 训练与验证
+    train_acc_list, val_acc_list, epoch_list = [], [], []
+    for epoch in range(config.epochs):
+        # 训练模型
+        train_loss, train_acc = train(config, model, train_loader, optimizer, criterion, config.device)
 
-        # 在每个折训练完后可以测试一下模型的性能
-        test_loader = torch.utils.data.DataLoader(val_data, batch_size=config.batch_size, shuffle=False)
-        # test_loader = create_dataloader(config, config.test_path, config.batch_size)
-        test_acc = test(config, model, test_loader, criterion, config.device)
-        acc_list.append(test_acc)
-        print(f"Test Accuracy for fold {i + 1}: {test_acc:.4f}")
+        # 验证模型
+        val_loss, val_acc = evaluate(config, model, val_loader, criterion, config.device)
 
-    plt.plot(k_list, acc_list)
-    plt.xlabel('k')
-    plt.ylabel('acc')
+        # 更新学习率
+        lr = optimizer.state_dict()['param_groups'][0]['lr']
+        if lr > 1e-5:
+            scheduler.step()
+
+        # 记录每个 epoch 的结果
+        epoch_list.append(epoch + 1)
+        train_acc_list.append(train_acc)
+        val_acc_list.append(val_acc)
+
+        # 打印每个 epoch 的结果
+        print(f"Epoch [{epoch + 1}/{config.epochs}], Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, "
+              f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
+
+        # 测试模型
+    test_acc = test(config, model, test_loader, criterion, config.device)
+    print(f"Test Accuracy: {test_acc:.4f}")
+
+    # 可视化训练过程中的准确率变化
+    plt.plot(epoch_list, train_acc_list, label='Train Accuracy')
+    plt.plot(epoch_list, val_acc_list, label='Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend()
     plt.show()
 
 
